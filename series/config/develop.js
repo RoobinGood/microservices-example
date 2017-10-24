@@ -7,6 +7,6 @@ exports.config = {
 		port: '8001'
 	},
 	db: {
-		path: './data/series.json'
+		path: './data/series.nedb'
 	}
 };

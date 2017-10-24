@@ -1,14 +1,24 @@
 'use strict';
 
-var DB = require('nosql');
+var Datastore = require('nedb');
 var pathUtils = require('path');
 
 exports.db;
 
+var absolutePathRegexp = /^\//;
 exports.init = function(params, callback) {
-	var dbPath = pathUtils.join(__dirname, params.path);
-	console.log(dbPath)
-	exports.db = DB.load(params.path);
+	var dbPath = params.path;
+	if (!absolutePathRegexp.test(dbPath)) {
+		dbPath = pathUtils.join(__dirname, dbPath);
+	}
 
-	callback();
+	var db = new Datastore({filename: dbPath});
+	db.loadDatabase(function(err) {
+		if (err) {
+			return callback(err);
+		}
+
+		exports.db = db;
+		callback();
+	});
 };

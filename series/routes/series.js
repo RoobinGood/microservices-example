@@ -2,25 +2,46 @@
 
 var async = require('async');
 var db = require('../db').db;
+var errors = require('../utils/errors');
 
 module.exports = function(app) {
-	app.get('/api/series/:id', function(req, res, next) {
+	app.get('/api/series/:_id', function(req, res, next) {
+		var params = req.params;
+
 		async.waterfall([
 			function(callback) {
-				db.find({_id: 1}, callback)
+				db.findOne({_id: params._id}, callback);
 			},
 			function(series, callback) {
-				if (series) {
-					res.status(200);
-					res.json({
-						data: series
-					});
-				} else {
-					res.status(404);
-					res.json({
-						message: 'sereis not found'
-					});
+				if (!series) {
+					return callback(new errors.NotFoundError(
+						'Series not found: _id = ' + params._id
+					));
 				}
+
+				res.json({
+					data: series
+				});
+			}
+		], next);
+	});
+
+	app.get('/api/series', function(req, res, next) {
+		async.waterfall([
+			function(callback) {
+				var params = req.params;
+
+				var cursor = db.find({_id: params._id})
+					.skip(params.offset)
+					.limit(params.offset);
+
+				cursor.exec(callback);
+			},
+			function(series, callback) {
+
+				res.json({
+					data: series
+				});
 			}
 		], next);
 	});

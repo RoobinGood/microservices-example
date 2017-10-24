@@ -9,11 +9,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "async": "^2.5.0",
-    "body-parser": "^1.18.2",
+    "async": "2.5.0",
+    "body-parser": "1.18.2",
     "express": "4.16.2",
-    "nosql": "^5.0.3",
-    "tinydb": "^0.1.0",
-    "underscore": "^1.8.3"
+    "nedb": "1.8.0",
+    "underscore": "1.8.3"
+  },
+  "devDependencies": {
+    "supervisor": "^0.12.0"
   }
 }
