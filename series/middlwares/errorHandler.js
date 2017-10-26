@@ -5,12 +5,12 @@ var errors = require('../utils/errors');
 module.exports = function(err, req, res, next) {
 	if (!res.headersSent) {
 		var error;
-		if (!err instanceof errors.BaseError) {
+		if (err instanceof errors.BaseError) {
+			error = err;
+		} else {
 			error = new errors.ServerError({
 				message: err.message
 			});
-		} else {
-			error = err;
 		}
 
 		res.status(error.status);

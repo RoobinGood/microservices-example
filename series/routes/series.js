@@ -3,6 +3,7 @@
 var async = require('async');
 var db = require('../db').db;
 var errors = require('../utils/errors');
+var Ajv = require('ajv');
 
 module.exports = function(app) {
 	app.get('/api/series/:_id', function(req, res, next) {
@@ -27,13 +28,46 @@ module.exports = function(app) {
 	});
 
 	app.get('/api/series', function(req, res, next) {
+		var query = req.query || {};
+		var ajv = new Ajv({coerceTypes: true});
+
 		async.waterfall([
 			function(callback) {
-				var params = req.params;
+				var valid = ajv.validate({
+					type: 'object',
+					properties: {
+						offset: {
+							type: 'integer',
+							minimum: 0
+						},
+						limit: {
+							type: 'integer',
+							minimum: 0
+						},
+						title: {
+							type: 'string'
+						}
+					},
+					additionalProperties: false
+				}, query);
 
-				var cursor = db.find({_id: params._id})
-					.skip(params.offset)
-					.limit(params.offset);
+				if (!valid) {
+					console.log(ajv.errors)
+					return callback(
+						new errors.BadRequestError()
+					);
+				}
+
+				var condition = {};
+				if (query.title) {
+					condition.title = {
+						$regex: new RegExp(query.title)
+					};
+				}
+
+				var cursor = db.find(condition)
+					.skip(query.offset)
+					.limit(query.limit);
 
 				cursor.exec(callback);
 			},
@@ -61,10 +95,19 @@ module.exports = function(app) {
 	});
 
 	app.put('/api/series/:id', function(req, res, next) {
+		var params = req.params;
+		var data = req.body;
+
 		async.waterfall([
 			function(callback) {
-				var params = req.params;
-				var data = req.body;
+				db.findOne({_id: params.id}, callback);
+			},
+			function(series, callback) {
+				if (!series) {
+					return callback(new errors.NotFoundError(
+						'Series not found: _id = ' + params._id
+					));
+				}
 
 				db.update(
 					{_id: params.id},

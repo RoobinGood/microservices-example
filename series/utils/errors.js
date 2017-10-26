@@ -40,6 +40,18 @@ NotFoundError.prototype.name = 'NotFoundError';
 NotFoundError.prototype.message = 'Not found error';
 
 
+function BadRequestError(params) {
+	BaseError.apply(this, arguments);
+}
+
+utilHelpers.inherits(BadRequestError, BaseError);
+
+BadRequestError.prototype.status = 400;
+BadRequestError.prototype.name = 'BadRequestError';
+BadRequestError.prototype.message = 'Bad request error';
+
+
 exports.BaseError = BaseError;
 exports.ServerError = ServerError;
 exports.NotFoundError = NotFoundError;
+exports.BadRequestError = BadRequestError;
