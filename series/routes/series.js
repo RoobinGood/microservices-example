@@ -38,7 +38,6 @@ module.exports = function(app) {
 				cursor.exec(callback);
 			},
 			function(series, callback) {
-
 				res.json({
 					data: series
 				});
@@ -46,5 +45,39 @@ module.exports = function(app) {
 		], next);
 	});
 
+	app.post('/api/series', function(req, res, next) {
+		async.waterfall([
+			function(callback) {
+				var data = req.body;
 
+				db.insert(data, callback);
+			},
+			function(series, callback) {
+				res.json({
+					data: series
+				});
+			}
+		], next);
+	});
+
+	app.put('/api/series/:id', function(req, res, next) {
+		async.waterfall([
+			function(callback) {
+				var params = req.params;
+				var data = req.body;
+
+				db.update(
+					{_id: params.id},
+					data,
+					{returnUpdatedDocs: true},
+					callback
+				);
+			},
+			function(series, callback) {
+				res.json({
+					data: series
+				});
+			}
+		], next);
+	});
 };

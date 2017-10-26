@@ -13,9 +13,10 @@ module.exports = function(err, req, res, next) {
 			error = err;
 		}
 
-		res.status(err.status);
+		res.status(error.status);
 		res.json({
-			message: err.message
+			name: error.name,
+			message: error.message
 		});
  	}
 
