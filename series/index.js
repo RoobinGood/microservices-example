@@ -7,6 +7,7 @@ var configManager = require('./config');
 
 var express = require('express');
 var bodyParser = require('body-parser');
+var serviceRegistry = require('./utils/serviceRegistry');
 
 var app;
 var config;
@@ -36,9 +37,10 @@ async.waterfall([
 		app.listen(port, host, callback);
 	},
 	function() {
+		serviceRegistry.init(config.serviceRegistry);
+
 		console.info('Server started');
 	}
 ], function(error) {
-		console.log(arguments)
 	console.error('Process failed: %s', error && error.stac);
 });
