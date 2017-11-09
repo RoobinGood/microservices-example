@@ -51,7 +51,27 @@ BadRequestError.prototype.name = 'BadRequestError';
 BadRequestError.prototype.message = 'Bad request error';
 
 
+function ValidationError(params) {
+	BadRequestError.apply(this, arguments);
+
+	this.message = _(params).reduce(function(message, error) {
+		if (message.length) {
+			message += '\n';
+		}
+
+		message += [error.dataPath, error.message].join(' ');
+
+		return message;
+	}, '');
+}
+
+utilHelpers.inherits(ValidationError, BadRequestError);
+
+ValidationError.prototype.name = 'ValidationError';
+
+
 exports.BaseError = BaseError;
 exports.ServerError = ServerError;
 exports.NotFoundError = NotFoundError;
 exports.BadRequestError = BadRequestError;
+exports.ValidationError = ValidationError;

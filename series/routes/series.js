@@ -3,7 +3,60 @@
 var async = require('async');
 var db = require('../db').db;
 var errors = require('../utils/errors');
-var Ajv = require('ajv');
+var validate = require('../utils/validate').validate;
+
+
+var idScheme = {
+	type: 'object',
+	properties: {
+		_id: {
+			type: 'string'
+		}
+	},
+	required: ['_id'],
+	additionalProperties: false
+};
+
+var seriesScheme = {
+	type: 'object',
+	properties: {
+		title: {type: 'string'},
+		originalTitle: {type: 'string'},
+		sources: {
+			type: 'array',
+			items: {
+				type: 'object',
+				properties: {
+					source: {type: 'string'},
+					sourceUrl: {type: 'string'},
+					releases: {
+						type: 'array',
+						items: {
+							type: 'object',
+							properties: {
+								title: {type: 'string'},
+								season: {type: 'integer'},
+								series: {type: 'integer'}
+							},
+							required: [
+								'title', 'season', 'series'
+							],
+							additionalProperties: false
+						},
+					}
+				},
+				required: [
+					'source', 'sourceUrl', 'releases'
+				],
+				additionalProperties: false
+			}
+		}
+	},
+	required: [
+		'title', 'sources'
+	],
+	additionalProperties: false
+};
 
 module.exports = function(app) {
 	app.get('/api/series/:_id', function(req, res, next) {
@@ -11,6 +64,10 @@ module.exports = function(app) {
 
 		async.waterfall([
 			function(callback) {
+				validate(idScheme, params, callback);
+			},
+			function(validatedParams, callback) {
+				params = validatedParams;
 				db.findOne({_id: params._id}, callback);
 			},
 			function(series, callback) {
@@ -28,12 +85,11 @@ module.exports = function(app) {
 	});
 
 	app.get('/api/series', function(req, res, next) {
-		var query = req.query || {};
-		var ajv = new Ajv({coerceTypes: true});
-
 		async.waterfall([
 			function(callback) {
-				var valid = ajv.validate({
+				var query = req.query || {};
+
+				validate({
 					type: 'object',
 					properties: {
 						offset: {
@@ -42,22 +98,18 @@ module.exports = function(app) {
 						},
 						limit: {
 							type: 'integer',
-							minimum: 0
+							minimum: 0,
+							maximum: 100,
+							default: 20
 						},
 						title: {
 							type: 'string'
 						}
 					},
 					additionalProperties: false
-				}, query);
-
-				if (!valid) {
-					console.log(ajv.errors)
-					return callback(
-						new errors.BadRequestError()
-					);
-				}
-
+				}, query, callback);
+			},
+			function(query, callback) {
 				var condition = {};
 				if (query.title) {
 					condition.title = {
@@ -83,7 +135,9 @@ module.exports = function(app) {
 		async.waterfall([
 			function(callback) {
 				var data = req.body;
-
+				validate(seriesScheme, data, callback);
+			},
+			function(data, callback) {
 				db.insert(data, callback);
 			},
 			function(series, callback) {
@@ -94,13 +148,22 @@ module.exports = function(app) {
 		], next);
 	});
 
-	app.put('/api/series/:id', function(req, res, next) {
+	app.put('/api/series/:_id', function(req, res, next) {
 		var params = req.params;
 		var data = req.body;
+		console.log(params, data)
 
 		async.waterfall([
 			function(callback) {
-				db.findOne({_id: params.id}, callback);
+				validate(idScheme, params, callback);
+			},
+			function(validatedParams, callback) {
+				params = validatedParams;
+				validate(seriesScheme, data, callback);
+			},
+			function(validatedData, callback) {
+				data = validatedData;
+				db.findOne({_id: params._id}, callback);
 			},
 			function(series, callback) {
 				if (!series) {
@@ -110,13 +173,41 @@ module.exports = function(app) {
 				}
 
 				db.update(
-					{_id: params.id},
+					{_id: params._id},
 					data,
 					{returnUpdatedDocs: true},
 					callback
 				);
 			},
 			function(series, callback) {
+				res.json({
+					data: series
+				});
+			}
+		], next);
+	});
+
+	app['delete']('/api/series/:_id', function(req, res, next) {
+		var params = req.params;
+
+		async.waterfall([
+			function(callback) {
+				validate(idScheme, params, callback);
+			},
+			function(validatedParams, callback) {
+				params = validatedParams;
+				db.findOne({_id: params._id}, callback);
+			},
+			function(series, callback) {
+				if (!series) {
+					return callback(new errors.NotFoundError(
+						'Series not found: _id = ' + params._id
+					));
+				}
+
+				db.remove({_id: params.id}, {}, callback);
+			},
+			function(series) {
 				res.json({
 					data: series
 				});
