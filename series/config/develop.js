@@ -5,13 +5,14 @@ exports.config = {
 	name: 'series',
 	listen: {
 		host: '127.0.0.1',
-		port: '8001'
+		port: 8001
 	},
 	db: {
 		path: './data/series.nedb'
 	},
 	serviceRegistry: {
 		host: '127.0.0.1',
-		port: '8500'
+		port: '8500',
+		tags: []
 	}
 };

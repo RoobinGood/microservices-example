@@ -4,10 +4,10 @@ var async = require('async');
 
 var initDb = require('./db').init;
 var configManager = require('./config');
+var serviceRegistry = require('./utils/serviceRegistry');
 
 var express = require('express');
 var bodyParser = require('body-parser');
-var serviceRegistry = require('./utils/serviceRegistry');
 
 var app;
 var config;
@@ -36,9 +36,17 @@ async.waterfall([
 		console.info('Starting server on %s:%s', host, port);
 		app.listen(port, host, callback);
 	},
-	function() {
+	function(callback) {
 		serviceRegistry.init(config.serviceRegistry);
 
+		serviceRegistry.registry.agent.service.register({
+			name: config.name,
+			address: config.listen.host,
+			port: config.listen.port,
+			tags: config.serviceRegistry.tags
+		}, callback);
+	},
+	function() {
 		console.info('Server started');
 	}
 ], function(error) {

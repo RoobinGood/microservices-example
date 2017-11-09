@@ -4,6 +4,7 @@ var async = require('async');
 var db = require('../db').db;
 var errors = require('../utils/errors');
 var validate = require('../utils/validate').validate;
+var serviceRegistry = require('../utils/serviceRegistry');
 
 
 var idScheme = {
@@ -53,6 +54,15 @@ module.exports = function(app) {
 						'User not found: _id = ' + params._id
 					));
 				}
+
+				serviceRegistry.registry.catalog.service.nodes({
+					service: 'series'
+				}, function(err, result) {
+					callback(err, result, user)
+				});
+			},
+			function(seriesService, user) {
+				console.log(seriesService);
 
 				res.json({
 					data: user
