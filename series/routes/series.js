@@ -42,7 +42,7 @@ var seriesScheme = {
 								'title', 'season', 'series'
 							],
 							additionalProperties: false
-						},
+						}
 					}
 				},
 				required: [
