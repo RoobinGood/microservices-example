@@ -55,10 +55,12 @@ module.exports = function(app) {
 					));
 				}
 
-				serviceRegistry.registry.catalog.service.nodes({
+				serviceRegistry.getServiceInfo({
 					service: 'series'
-				}, function(err, result) {
-					callback(err, result, user)
+				}, function(err, serviceInfo) {
+					if (err) return callback(err);
+
+					callback(null, serviceInfo, user);
 				});
 			},
 			function(seriesService, user) {

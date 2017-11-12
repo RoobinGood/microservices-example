@@ -37,19 +37,19 @@ async.waterfall([
 		app.listen(port, host, callback);
 	},
 	function(callback) {
-		serviceRegistry.init(config.serviceRegistry);
-
-		serviceRegistry.registry.agent.service.register({
-			name: config.name,
-			address: config.listen.host,
-			port: config.listen.port,
-			tags: config.serviceRegistry.tags
+		serviceRegistry.init({
+			serviceRegistryConfig: config.serviceRegistry,
+			serviceInfo: {
+				name: config.name,
+				address: config.listen.host,
+				port: config.listen.port,
+				tags: config.serviceRegistry.tags
+			}
 		}, callback);
 	},
 	function() {
 		console.info('Server started');
 	}
 ], function(error) {
-		console.log(arguments)
-	console.error('Process failed: %s', error && error.stac);
+	console.error('Process failed: %s', error && error.stack);
 });
