@@ -104,6 +104,12 @@ module.exports = function(app) {
 						},
 						title: {
 							type: 'string'
+						},
+						_ids: {
+							type: 'array',
+							items: {
+								type: 'string'
+							}
 						}
 					},
 					additionalProperties: false
@@ -114,6 +120,12 @@ module.exports = function(app) {
 				if (query.title) {
 					condition.title = {
 						$regex: new RegExp(query.title)
+					};
+				}
+
+				if (query._ids) {
+					condition._id = {
+						$in: query._ids
 					};
 				}
 
@@ -151,7 +163,6 @@ module.exports = function(app) {
 	app.put('/api/series/:_id', function(req, res, next) {
 		var params = req.params;
 		var data = req.body;
-		console.log(params, data)
 
 		async.waterfall([
 			function(callback) {

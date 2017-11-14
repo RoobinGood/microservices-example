@@ -1,10 +1,12 @@
 'use strict';
 
 var async = require('async');
+var _ = require('underscore');
 var db = require('../db').db;
 var errors = require('../utils/errors');
 var validate = require('../utils/validate').validate;
-var serviceRegistry = require('../utils/serviceRegistry');
+var serviceRequest = require('../utils/serviceRequest').serviceRequest;
+var accumulateCallback = require('../utils/async').accumulateCallback;
 
 
 var idScheme = {
@@ -55,16 +57,27 @@ module.exports = function(app) {
 					));
 				}
 
-				serviceRegistry.getServiceInfo({
-					service: 'series'
-				}, function(err, serviceInfo) {
-					if (err) return callback(err);
+				var fill = accumulateCallback(2, callback);
+				fill()(null, user);
 
-					callback(null, serviceInfo, user);
-				});
+				if (user.series && user.series.length) {
+					serviceRequest({
+						service: 'series',
+						path: '/api/series',
+						data: {
+							_ids: _(user.series).pluck('_id')
+						}
+					}, fill());
+				} else {
+					fill()(null, []);
+				}
 			},
-			function(seriesService, user) {
-				console.log(seriesService);
+			function(user, series) {
+				var seriesIndex = _(series).indexBy('_id');
+
+				user.series = _(user.series || []).map(function(series) {
+					return seriesIndex[series._id];
+				});
 
 				res.json({
 					data: user
@@ -140,7 +153,6 @@ module.exports = function(app) {
 	app.put('/api/users/:_id', function(req, res, next) {
 		var params = req.params;
 		var data = req.body;
-		console.log(params, data)
 
 		async.waterfall([
 			function(callback) {
