@@ -10,12 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "ajv": "5.2.4",
     "async": "2.5.0",
     "body-parser": "1.18.2",
-    "consul": "0.30.0",
+    "common-utils": "file:../common-utils",
     "express": "4.16.2",
-    "got": "5.7.1",
     "nedb": "1.8.0",
     "underscore": "1.8.3"
   },

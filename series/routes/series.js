@@ -2,8 +2,8 @@
 
 var async = require('async');
 var db = require('../db').db;
-var errors = require('../utils/errors');
-var validate = require('../utils/validate').validate;
+var errors = require('common-utils/utils/errors');
+var validate = require('common-utils/utils/validate').validate;
 
 
 var idScheme = {
