@@ -34,7 +34,8 @@ async.waterfall([
 		var host = config.listen.host;
 		var port = config.listen.port;
 		console.info('Starting server on %s:%s', host, port);
-		app.listen(port, host, callback);
+		var server = app.listen(port, host, callback);
+		app.server = server;
 	},
 	function(callback) {
 		serviceRegistry.init({
