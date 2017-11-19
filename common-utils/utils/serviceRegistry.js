@@ -6,9 +6,6 @@ var async = require('async');
 
 exports.registry;
 
-var servicesList = [
-	'series'
-];
 var servicesHash = {};
 
 exports.init = function(params, callback) {
@@ -23,14 +20,18 @@ exports.init = function(params, callback) {
 			);
 		},
 		function() {
+			_(params.services).each(function(serviceName) {
+				servicesHash[serviceName] = null;
+			});
+
 			exports.getServicesInfo(callback);
 		}
-	], function() {
+	], function(err) {
 		setInterval(function() {
 			exports.getServicesInfo()
 		}, 3 * 60 * 1000);
 
-		callback();
+		callback(err);
 	});
 };
 
@@ -39,6 +40,12 @@ exports.getServiceInfo = function(params, callback) {
 
 	async.waterfall([
 		function(callback) {
+			if (!_(servicesHash).has(serviceName)) {
+				return callback(new Error(
+					'Service "' + serviceName + '" is not available for current service'
+				));
+			}
+
 			var serviceInfo = servicesHash[serviceName];
 
 			if (serviceInfo) {
@@ -60,7 +67,7 @@ exports.getServiceInfo = function(params, callback) {
 exports.getServicesInfo = function(callback) {
 	callback = callback || _.noop;
 	async.each(
-		servicesList,
+		_(servicesHash).keys(),
 		function(serviceName, callback) {
 			exports.getServiceInfo({
 				service: serviceName

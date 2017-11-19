@@ -44,7 +44,8 @@ async.waterfall([
 				address: config.listen.host,
 				port: config.listen.port,
 				tags: config.serviceRegistry.tags
-			}
+			},
+			services: ['series']
 		}, callback);
 	},
 	function() {
