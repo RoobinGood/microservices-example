@@ -40,13 +40,13 @@ async.waterfall([
 	function(callback) {
 		serviceRegistry.init({
 			serviceRegistryConfig: config.serviceRegistry,
-			serviceInfo: {
+			serviceConfig: {
 				name: config.name,
-				address: config.listen.host,
-				port: config.listen.port,
+				listen: config.listen,
 				tags: config.serviceRegistry.tags
 			},
-			services: []
+			services: [],
+			check: config.serviceRegistry.healthcheck
 		}, callback);
 	},
 	function() {

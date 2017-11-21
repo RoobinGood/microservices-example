@@ -13,7 +13,12 @@ exports.config = {
 	serviceRegistry: {
 		host: '127.0.0.1',
 		port: '8500',
-		tags: []
+		tags: [],
+		healthcheck: {
+			path: '/healthchecks/state',
+			interval: '30s',
+			deregistercriticalserviceafter: '120s'
+		}
 	},
 	connectionsCountLimits: {
 		critical: 1000,

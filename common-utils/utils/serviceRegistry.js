@@ -3,11 +3,23 @@
 var _ = require('underscore');
 var Consul = require('consul');
 var async = require('async');
+var Url = require('url');
 
 exports.registry;
 
 var servicesHash = {};
 
+/*
+ * @param {object} params.serviceRegistryConfig
+ * @param {string} params.serviceConfig.name
+ * @param {boolean} params.serviceConfig.listen.ssl
+ * @param {string} params.serviceConfig.listen.host
+ * @param {number} params.serviceConfig.listen.port
+ * @param {string[]} params.serviceConfig.tags
+ * @param {string[]} [params.services=[]]
+ * @param {string} [params.check.path]
+ * @param {string} [params.check.interval]
+ */
 exports.init = function(params, callback) {
 	async.waterfall([
 		function(callback) {
@@ -15,11 +27,28 @@ exports.init = function(params, callback) {
 				params.serviceRegistryConfig
 			);
 
-			exports.registry.agent.service.register(
-				params.serviceInfo, callback
-			);
+			var serviceConfig = params.serviceConfig;
+
+			var serviceInfo = {
+				name: serviceConfig.name,
+				address: serviceConfig.listen.host,
+				port: Number(serviceConfig.listen.port),
+				tags: serviceConfig.tags
+			};
+			serviceInfo.check = {
+				name: params.check.name || 'serviceState',
+				http: Url.format({
+					protocol: serviceConfig.listen.ssl ? 'https:' : 'http:',
+					hostname: serviceConfig.listen.host,
+					port: serviceConfig.listen.port,
+					pathname: params.check.path
+				}),
+				interval: params.check.interval
+			};
+
+			exports.registry.agent.service.register(serviceInfo, callback);
 		},
-		function() {
+		function(callback) {
 			_(params.services).each(function(serviceName) {
 				servicesHash[serviceName] = null;
 			});

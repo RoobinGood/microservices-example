@@ -6,8 +6,10 @@ var createStateHealthcheckMiddlware = require(
 );
 
 module.exports = function(app) {
+	var config = configManager.get();
+
 	app.get(
-		'/healthchecks/state',
+		config.serviceRegistry.healthcheck.path,
 		createStateHealthcheckMiddlware({
 			getServer: function() {
 				return app.server;
