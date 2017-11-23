@@ -6,6 +6,7 @@ var async = require('async');
 var Url = require('url');
 
 exports.registry;
+exports.serviceId;
 
 var servicesHash = {};
 
@@ -29,7 +30,9 @@ exports.init = function(params, callback) {
 
 			var serviceConfig = params.serviceConfig;
 
+			exports.serviceId = serviceConfig.name + '_' + _.random(1000, 9999);
 			var serviceInfo = {
+				id: exports.serviceId,
 				name: serviceConfig.name,
 				address: serviceConfig.listen.host,
 				port: Number(serviceConfig.listen.port),
@@ -62,6 +65,16 @@ exports.init = function(params, callback) {
 
 		callback(err);
 	});
+};
+
+exports.deregister = function(callback) {
+	if (exports.registry) {
+		exports.registry.agent.service.deregister({
+			id: exports.serviceId
+		}, callback);
+	} else {
+		callback();
+	}
 };
 
 exports.getServiceInfo = function(params, callback) {
