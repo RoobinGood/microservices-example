@@ -5,7 +5,7 @@ var pathUtils = require('path');
 
 module.exports = function(app) {
 	_([
-		'series'
+		'series', 'healthchecks'
 	]).each(function(resourceName) {
 		require(
 			pathUtils.join(__dirname, resourceName)

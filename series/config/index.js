@@ -7,7 +7,7 @@ exports.get = function() {
 	var configPath;
 
 	if (env === 'development') {
-		configPath =pathUtils.join(__dirname, 'develop');
+		configPath = pathUtils.join(__dirname, 'develop');
 	} else {
 		configPath = process.env.NODE_CONFIG_PATH;
 	}

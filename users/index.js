@@ -1,6 +1,7 @@
 'use strict';
 
 var async = require('async');
+var _ = require('underscore');
 
 var initDb = require('./db').init;
 var configManager = require('./config');
@@ -11,6 +12,29 @@ var bodyParser = require('body-parser');
 
 var app;
 var config;
+
+var gracefulShutdown = function(exitCode) {
+	var timeoutId;
+	var exitCallback = function() {
+		if (timeoutId) {
+			clearTimeout(timeoutId);
+		}
+		process.exit(128 + exitCode);
+	};
+
+	timeoutId = setTimeout(exitCallback, 3000);
+
+	serviceRegistry.deregister(exitCallback);
+};
+
+_({
+	SIGINT: 2,
+	SIGTERM: 15
+}).each(function(exitCode, exitSignal) {
+	process.on(exitSignal, function() {
+		gracefulShutdown(exitCode);
+	});
+});
 
 async.waterfall([
 	function(callback) {
@@ -34,17 +58,19 @@ async.waterfall([
 		var host = config.listen.host;
 		var port = config.listen.port;
 		console.info('Starting server on %s:%s', host, port);
-		app.listen(port, host, callback);
+		var server = app.listen(port, host, callback);
+		app.server = server;
 	},
 	function(callback) {
 		serviceRegistry.init({
 			serviceRegistryConfig: config.serviceRegistry,
-			serviceInfo: {
+			serviceConfig: {
 				name: config.name,
-				address: config.listen.host,
-				port: config.listen.port,
+				listen: config.listen,
 				tags: config.serviceRegistry.tags
-			}
+			},
+			services: ['series'],
+			check: config.serviceRegistry.healthcheck
 		}, callback);
 	},
 	function() {

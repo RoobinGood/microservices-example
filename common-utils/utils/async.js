@@ -7,7 +7,6 @@ exports.accumulateCallback = function(volume, callback) {
 
 	var results = [null];
 	callback = _(volume).after(function() {
-		console.log('done')
 		originalCallback.apply(null, results);
 	});
 
@@ -17,11 +16,9 @@ exports.accumulateCallback = function(volume, callback) {
 
 		return (function(currentIndex) {
 			return function(err, result) {
-				console.log(currentIndex, arguments)
 				if (err) return originalCallback(err);
 
 				if (results) results[currentIndex] = result;
-				console.log(results)
 				callback();
 			};
 		})(index);
