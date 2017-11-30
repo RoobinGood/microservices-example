@@ -17,13 +17,13 @@ exports.init = function(params, callback) {
 		dbPath = pathUtils.join(__dirname, dbPath);
 	}
 
-	db = {};
+	exports.db = {};
 
 	async.each(
 		collectionName,
 		function(collectionName, callback) {
 			var collection = new Datastore({
-				filename: pathUtils.join(dbPath, collectionName + '.nedb');
+				filename: pathUtils.join(dbPath, collectionName + '.nedb')
 			});
 
 			collection.loadDatabase(function(err) {

@@ -5,7 +5,7 @@ exports.config = {
 	name: 'auth',
 	listen: {
 		host: '127.0.0.1',
-		port: 8002
+		port: 8003
 	},
 	db: {
 		path: './data'
@@ -14,6 +14,15 @@ exports.config = {
 	serviceRegistry: {
 		host: '127.0.0.1',
 		port: '8500',
-		tags: []
+		tags: [],
+		healthcheck: {
+			path: '/healthchecks/state',
+			interval: '30s',
+			deregistercriticalserviceafter: '120s'
+		}
+	},
+	connectionsCountLimits: {
+		critical: 1000,
+		warn: 800
 	}
 };
